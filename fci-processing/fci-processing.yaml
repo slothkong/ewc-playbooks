@@ -25,7 +25,7 @@
 
   - name: Create symlink to config
     file:
-      src: '{{ install_dir }}/ewc-config/nginx'
+      src: '{{ install_dir }}/ewc-config/config_fci_nc'
       dest: '{{ install_dir }}/config'
       state: link
 
