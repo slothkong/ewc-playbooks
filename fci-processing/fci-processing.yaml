@@ -1,0 +1,46 @@
+---
+- hosts: all
+  name: fci-processing
+
+  vars:
+    input_dir: /eodata/fci/
+    output_dir: /eodata/fci_out/
+
+  tasks:
+  - name: Install the latest version of podman
+    package:
+      name: podman
+      state: latest
+
+  - name: Clone the configuration
+    git:
+      repo: https://github.com/nordsat/ewc-config.git
+      dest: '{{ install_dir }}/ewc-config'
+
+  - name: Create logs directory
+    file:
+      path: '{{ install_dir }}/logs'
+      state: directory
+      mode: '0755'
+
+  - name: Create symlink to config
+    file:
+      src: '{{ install_dir }}/ewc-config/nginx'
+      dest: '{{ install_dir }}/config'
+      state: link
+
+  - name: Restart the processing container
+    containers.podman.podman_container:
+      name: fci_pytroll_processing
+      image: trollflow2
+      state: started
+      restart: true
+      userns: keep-id
+      mount:
+        - "type=bind,source={{ install_dir }}/config/,target=/mnt/config/"
+        - "type=bind,source={{ install_dir }}/logs/,target=/mnt/logs"
+        - "type=bind,source={{ input_dir }},target=/mnt/input/"
+        - "type=bind,source={{ output_dir }},target=/mnt/output/"
+      rm: true
+      ports:
+          - "9001:9001"
