@@ -3,6 +3,7 @@
   name: fci-processing
 
   vars:
+    install_dir: "{{ ansible_env.HOME }}/fci-processing"
     input_dir: /eodata/fci/
     output_dir: /eodata/fci_out/
 
@@ -15,18 +16,18 @@
   - name: Clone the configuration
     git:
       repo: https://github.com/nordsat/ewc-config.git
-      dest: '{{ install_dir }}/config'
+      dest: "{{ install_dir }}/config"
 
   - name: Create logs directory
     file:
-      path: '{{ install_dir }}/logs'
+      path: "{{ install_dir }}/logs"
       state: directory
       mode: '0755'
 
   - name: Create symlink to config
     file:
-      src: '{{ install_dir }}/config/config_fci_nc'
-      dest: '{{ install_dir }}/fci-config'
+      src: "{{ install_dir }}/config/config_fci_nc"
+      dest: "{{ install_dir }}/fci-config"
       state: link
 
   # Add pulling of the image once it is on dockerhub
