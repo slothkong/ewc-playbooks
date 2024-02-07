@@ -2,10 +2,8 @@
 - hosts: all
   name: fci-processing
 
-  vars:
-    install_dir: "{{ ansible_env.HOME }}/fci-processing"
-    input_dir: /eodata/fci/
-    output_dir: /eodata/fci_out/
+  vars_files:
+    - vars.yaml
 
   tasks:
   - name: Install the latest version of podman
