@@ -1,0 +1,79 @@
+---
+- hosts: all
+  name: seviri-processing
+
+  vars_files:
+    - vars.yaml
+
+  tasks:
+  - name: Install the latest version of podman
+    package:
+      name: podman
+      state: latest
+
+  - name: Create install directory
+    file:
+      path: "{{ install_dir }}"
+      state: directory
+      mode: '0755'
+
+  - name: Clone the configuration
+    git:
+      repo: https://github.com/nordsat/ewc-config.git
+      dest: "{{ install_dir }}/config"
+
+  - name: Create symlink to config
+    file:
+      src: "{{ install_dir }}/config/config_seviri_hrit"
+      dest: "{{ install_dir }}/seviri-config"
+      state: link
+
+  # Add pulling of the image once it is on dockerhub
+  - name: Pull the segment-gatherer image
+    containers.podman.podman_image:
+      name: docker.io/mraspaud/segment-gatherer:main
+
+  - name: Restart the segment-gatherer
+    containers.podman.podman_container:
+      name: segment-gatherer
+      image: docker.io/mraspaud/segment-gatherer:main
+      state: started
+      # make this conditional on config change or new image version
+      restart: true
+      # userns: keep-id
+      mount:
+        - "type=bind,source={{ install_dir }}/seviri-config/segment_gatherer.yaml,target=/config/segment_gatherer.yaml"
+        - "type=bind,source=/dev/null,target=/config/env-variables"
+      rm: false
+
+  # - name: Restart the processing container
+  #   containers.podman.podman_container:
+  #     name: fci_pytroll_processing
+  #     image: trollflow2
+  #     state: started
+  #     # make this conditional on config change or new image version
+  #     restart: false
+  #     userns: keep-id
+  #     mount:
+  #       - "type=bind,source={{ install_dir }}/fci-config/,target=/mnt/config/"
+  #       - "type=bind,source={{ install_dir }}/logs/,target=/mnt/logs"
+  #       - "type=bind,source={{ input_dir }},target=/mnt/input/"
+  #       - "type=bind,source={{ output_dir }},target=/mnt/output/"
+  #     rm: true
+  #     ports:
+  #         - "9001:9001"
+
+  # - name: Restart the wms container
+  #   containers.podman.podman_container:
+  #     name: fastapi-nordsat-ewc-fci
+  #     image: fastapi-nordsat-ewc-fci:latest
+  #     state: started
+  #     # make this conditional on config change or new image version
+  #     restart: true
+  #     volume:
+  #       - /eodata/fci_out
+  #       - /eodata/fci_out/list-of-files.json
+  #     command: "/opt/conda/envs/fastapi/bin/gunicorn --worker-class uvicorn.workers.UvicornWorker --workers 10 --bind 0.0.0.0:8999 fastapi_nordsat_ewc.main:app --keep-alive 120 --log-level debug --timeout 120 --env NETLOC_ADDRESS=64.225.133.250.nip.io --env NETLOC_SCHEME=https"
+  #     rm: true
+  #     ports:
+  #         - "8999:8999"
