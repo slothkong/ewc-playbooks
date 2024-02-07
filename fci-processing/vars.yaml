@@ -1,4 +1,4 @@
 install_dir: "{{ ansible_env.HOME }}/fci-processing"
 input_dir: /eodata/fci/
 output_dir: /eodata/fci_out/
-satellite_data_type: "{{morpheus['customOptions']['satellite_data_type']}}" || "fci"
+satellite_data_type: "{{morpheus['customOptions']['satellite_data_type'] | "fci" }}"
