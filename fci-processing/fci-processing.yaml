@@ -27,6 +27,7 @@
       src: "{{ install_dir }}/config/config_fci_nc"
       dest: "{{ install_dir }}/fci-config"
       state: link
+    when: satellite_data_type == 'fci'
 
   # Add pulling of the image once it is on dockerhub
 
