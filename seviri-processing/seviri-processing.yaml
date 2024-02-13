@@ -11,69 +11,104 @@
       name: podman
       state: latest
 
+  - name: Install the latest version of catatonit
+    package:
+      name: catatonit
+      state: latest
+
+  - name: Install the latest version of aardvark-dns
+    package:
+      name: aardvark-dns
+      state: latest
+
   - name: Create install directory
     file:
       path: "{{ install_dir }}"
       state: directory
       mode: '0755'
 
-  - name: Clone the configuration
+  - name: Update the trollflow2 configuration
     git:
       repo: https://github.com/nordsat/ewc-config.git
-      dest: "{{ install_dir }}/config"
+      dest: "{{ install_dir }}"
+    register: git_config_results
 
-  - name: Create symlink to config
-    file:
-      src: "{{ install_dir }}/config/config_seviri_hrit"
-      dest: "{{ install_dir }}/seviri-config"
-      state: link
+  - name: copy the trollstalker configuration
+    copy:
+      src: trollstalker.ini
+      dest: "{{ install_dir }}/config_seviri_hrit"
+    register: trollstalker_config_results
 
-  # Add pulling of the image once it is on dockerhub
+  - name: copy the segment-gatherer configuration
+    copy:
+      src: segment_gatherer.yaml
+      dest: "{{ install_dir }}/config_seviri_hrit"
+    register: segment_gatherer_config_results
+
+  - name: copy the environment configuration
+    copy:
+      src: env-variables
+      dest: "{{ install_dir }}/config_seviri_hrit"
+    register: environment_config_results
+
+  - name: Create a podman network
+    containers.podman.podman_network:
+      name: pytroll_network
+
+  - name: Pull the trollstalker image
+    containers.podman.podman_image:
+      name: docker.io/mraspaud/trollstalker:main
+    register: trollstalker_image
+
+  - name: Print if container should be restarted
+    ansible.builtin.debug:
+      msg: "{{ (trollstalker_config_results.changed or trollstalker_image.changed) | bool }}"
+
+  - name: Restart the trollstalker
+    containers.podman.podman_container:
+      name: trollstalker-seviri
+      image: docker.io/mraspaud/trollstalker:main
+      state: started
+      # Does not have any effect because of https://github.com/containers/ansible-podman-collections/issues/355
+      force_restart: "{{ (trollstalker_config_results.changed or trollstalker_image.changed) | bool }}"
+      mount:
+        - "type=bind,source={{ install_dir }}/config_seviri_hrit/,target=/config/"
+        - "type=bind,source={{ input_dir }},target=/mnt/input/"
+      rm: true
+      network: pytroll_network
+
   - name: Pull the segment-gatherer image
     containers.podman.podman_image:
       name: docker.io/mraspaud/segment-gatherer:main
+    register: segment_gatherer_image
 
   - name: Restart the segment-gatherer
     containers.podman.podman_container:
-      name: segment-gatherer
+      name: segment-gatherer-seviri
       image: docker.io/mraspaud/segment-gatherer:main
       state: started
-      # make this conditional on config change or new image version
-      restart: true
-      # userns: keep-id
+      # Does not have any effect because of https://github.com/containers/ansible-podman-collections/issues/355
+      force_restart: "{{ segment_gatherer_config_results.changed or segment_gatherer_image.changed }}"
       mount:
-        - "type=bind,source={{ install_dir }}/seviri-config/segment_gatherer.yaml,target=/config/segment_gatherer.yaml"
-        - "type=bind,source=/dev/null,target=/config/env-variables"
-      rm: false
+        - "type=bind,source={{ install_dir }}/config_seviri_hrit/,target=/config/"
+      rm: true
+      network: pytroll_network
 
-  # - name: Restart the processing container
-  #   containers.podman.podman_container:
-  #     name: fci_pytroll_processing
-  #     image: trollflow2
-  #     state: started
-  #     # make this conditional on config change or new image version
-  #     restart: false
-  #     userns: keep-id
-  #     mount:
-  #       - "type=bind,source={{ install_dir }}/fci-config/,target=/mnt/config/"
-  #       - "type=bind,source={{ install_dir }}/logs/,target=/mnt/logs"
-  #       - "type=bind,source={{ input_dir }},target=/mnt/input/"
-  #       - "type=bind,source={{ output_dir }},target=/mnt/output/"
-  #     rm: true
-  #     ports:
-  #         - "9001:9001"
+  - name: Pull the trollflow2 image
+    containers.podman.podman_image:
+      name: docker.io/mraspaud/trollflow2:main
+    register: trollflow2_image
 
-  # - name: Restart the wms container
-  #   containers.podman.podman_container:
-  #     name: fastapi-nordsat-ewc-fci
-  #     image: fastapi-nordsat-ewc-fci:latest
-  #     state: started
-  #     # make this conditional on config change or new image version
-  #     restart: true
-  #     volume:
-  #       - /eodata/fci_out
-  #       - /eodata/fci_out/list-of-files.json
-  #     command: "/opt/conda/envs/fastapi/bin/gunicorn --worker-class uvicorn.workers.UvicornWorker --workers 10 --bind 0.0.0.0:8999 fastapi_nordsat_ewc.main:app --keep-alive 120 --log-level debug --timeout 120 --env NETLOC_ADDRESS=64.225.133.250.nip.io --env NETLOC_SCHEME=https"
-  #     rm: true
-  #     ports:
-  #         - "8999:8999"
+  - name: Restart trollflow2
+    containers.podman.podman_container:
+      name: trollflow2-seviri
+      image: docker.io/mraspaud/trollflow2:main
+      state: started
+      # Does not have any effect because of https://github.com/containers/ansible-podman-collections/issues/355
+      force_restart: "{{ trollflow2_image.changed or git_config_results.changed or environment_config_results.changed }}"
+      mount:
+        - "type=bind,source={{ install_dir }}/config_seviri_hrit/,target=/config/"
+        - "type=bind,source={{ input_dir }},target=/mnt/input/"
+        - "type=bind,source={{ output_dir }},target=/mnt/output/"
+      rm: true
+      network: pytroll_network
