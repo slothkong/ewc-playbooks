@@ -1,0 +1,3 @@
+install_dir: "{{ ansible_env.HOME }}/seviri-processing"
+input_dir: /eodata/hrit/
+output_dir: /eodata/hrit_out/
