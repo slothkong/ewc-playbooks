@@ -1,0 +1,2 @@
+morpheus_input: "{{ morpheus['customOptions']['satellite_data_type'] }}"
+satellite_data_type: "{{ morpheus_input | default('fci', true) }}"

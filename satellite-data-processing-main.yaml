@@ -1,0 +1,21 @@
+---
+- name: select processing chain based on satellite data requested 
+  hosts: all
+  become: true
+  become_user: root
+  become_method: sudo
+  vars_files: defaults.yml
+  
+  tasks:
+  - name: Print selected satellite data processing chain
+    debug:
+      msg: "Processing selected: {{ satellite_data_type }}"
+
+  - name: processing FCI
+    include_tasks: fci-processing/fci-processing-tasks.yaml
+    when: satellite_data_type == 'fci'
+
+  - name: processing SEVIRI
+    include_tasks: seviri-processing/seviri-processing-tasks.yaml
+    when: satellite_data_type == 'seviri'
+    
