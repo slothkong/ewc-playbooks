@@ -7,5 +7,5 @@
 
   tasks:
     - name: processing SEVIRI
-      include_tasks: seviri-processing/seviri-processing-tasks.yaml
+      include_tasks: seviri-processing-tasks.yaml
 
