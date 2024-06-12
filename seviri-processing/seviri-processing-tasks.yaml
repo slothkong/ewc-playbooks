@@ -39,8 +39,8 @@
     dest: "{{ install_dir }}"
   register: git_config_results
   failed_when:
-    - repo_clone.failed
-    - not 'Local modifications exist in repository' in repo_clone.msg
+    - git_config_results.failed
+    - not 'Local modifications exist in repository' in git_config_results.msg
 
 - name: copy the trollstalker configuration
   copy:
