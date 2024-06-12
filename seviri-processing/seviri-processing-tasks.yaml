@@ -117,4 +117,5 @@
       - "type=bind,source={{ input_dir }},target=/mnt/input/"
       - "type=bind,source={{ output_dir }},target=/mnt/output/"
     rm: true
+    force: true
     network: pytroll_network
