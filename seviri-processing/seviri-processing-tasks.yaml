@@ -38,6 +38,9 @@
     repo: https://github.com/nordsat/ewc-config.git
     dest: "{{ install_dir }}"
   register: git_config_results
+  failed_when:
+    - repo_clone.failed
+    - not 'Local modifications exist in repository' in repo_clone.msg
 
 - name: copy the trollstalker configuration
   copy:
