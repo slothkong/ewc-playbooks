@@ -31,13 +31,16 @@
   file:
     path: "{{ output_dir }}"
     state: directory
-    mode: '0755'
+    mode: '0777'
 
 - name: Update the trollflow2 configuration
   git:
     repo: https://github.com/nordsat/ewc-config.git
     dest: "{{ install_dir }}"
   register: git_config_results
+  failed_when:
+    - git_config_results.failed
+    - not 'Local modifications exist in repository' in git_config_results.msg
 
 - name: copy the trollstalker configuration
   copy:
