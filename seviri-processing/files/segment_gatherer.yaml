@@ -22,3 +22,5 @@ posttroll:
     - tcp://trollstalker-seviri:10000
   nameservers: false
   publish_port: 10001
+
+check_existing_files_after_start: true
