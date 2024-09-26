@@ -1,10 +1,10 @@
 ---
 - hosts: all
-  name: wms
+  name: fci-wms
 
   vars_files:
     - vars.yaml
 
   tasks:
     - name: Serving rasters with WMS
-      include_tasks: wms-tasks.yaml
+      include_tasks: fci-wms-tasks.yaml

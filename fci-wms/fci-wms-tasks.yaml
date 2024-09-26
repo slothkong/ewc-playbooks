@@ -50,7 +50,7 @@
 
 - name: Restart postgis
   containers.podman.podman_container:
-    name: postgis
+    name: postgis-fci
     image: docker.io/postgis/postgis:latest
     state: started
     force_restart: "{{ (postgis_image.changed or init_sql.changed) | bool }}"
@@ -91,7 +91,7 @@
 
 - name: Restart db-sync
   containers.podman.podman_container:
-    name: db-sync
+    name: db-sync-fci
     image: docker.io/mraspaud/db-sync:main
     state: started
     force_restart: "{{ (dbsync_image.changed or dbsync_config.changed or git_config_results.changed) | bool }}"
@@ -126,7 +126,7 @@
 
 - name: Restart mapserver
   containers.podman.podman_container:
-    name: mapserver
+    name: mapserver-fci
     image: docker.io/camptocamp/mapserver:latest
     state: started
     force_restart: "{{ (mapserver_image.changed or mapfile_template.changed) | bool }}"
