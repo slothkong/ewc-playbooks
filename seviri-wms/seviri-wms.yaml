@@ -1,0 +1,10 @@
+---
+- hosts: all
+  name: seviri-wms
+
+  vars_files:
+    - vars.yaml
+
+  tasks:
+    - name: Serving rasters with WMS
+      include_tasks: seviri-wms-tasks.yaml
