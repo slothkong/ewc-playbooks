@@ -15,24 +15,33 @@
     name: aardvark-dns
     state: latest
 
+- name: Install the latest version of uidmap
+  package:
+    name: uidmap
+    state: latest
+
+- name: Install the latest version of slirp4netns
+  package:
+    name: slirp4netns
+    state: latest
+
 - name: Create install directory
   file:
     path: "{{ install_dir }}"
     state: directory
     mode: '0755'
 
-- name: Create local pyspectral directory
-  file:
-    path: "{{ install_dir }}/local/"
-    state: directory
-    mode: '0777'
-
-
 - name: Create input directory
   file:
     path: "{{ input_dir }}"
     state: directory
-    mode: '0755'
+    mode: '0777'
+
+- name: Set up cleaning of input directory
+  cron:
+    name: "Clean up input data directory"
+    minute: "*/10"
+    job: "cd {{ input_dir }}; find . -type f -mmin +120 -delete"
 
 - name: Create output directory
   file:
@@ -40,26 +49,15 @@
     state: directory
     mode: '0777'
 
-- name: Update the trollflow2 configuration
-  git:
-    repo: https://github.com/nordsat/ewc-config.git
-    dest: "{{ install_dir }}"
-  register: git_config_results
-  failed_when:
-    - git_config_results.failed
-    - not 'Local modifications exist in repository' in git_config_results.msg
+- name: Create a podman network
+  containers.podman.podman_network:
+    name: pytroll_network
 
-- name: copy the trollstalker configuration
-  copy:
-    src: trollstalker.ini
-    dest: "{{ install_dir }}/config_fci_nc"
-  register: trollstalker_config_results
-
-- name: copy the segment-gatherer configuration
-  copy:
-    src: segment_gatherer.yaml
-    dest: "{{ install_dir }}/config_fci_nc"
-  register: segment_gatherer_config_results
+- name: Set up cleaning of output directory
+  cron:
+    name: "Clean up output data directory"
+    minute: "15"
+    job: "cd {{ output_dir }}; find . -type f -mtime +3 -delete"
 
 - name: copy the environment configuration
   copy:
@@ -67,9 +65,13 @@
     dest: "{{ install_dir }}/config_fci_nc"
   register: environment_config_results
 
-- name: Create a podman network
-  containers.podman.podman_network:
-    name: pytroll_network
+## Trollstalker
+
+- name: copy the trollstalker configuration
+  copy:
+    src: trollstalker.ini
+    dest: "{{ install_dir }}/config_fci_nc"
+  register: trollstalker_config_results
 
 - name: Pull the trollstalker image
   containers.podman.podman_image:
@@ -88,10 +90,20 @@
     # Does not have any effect because of https://github.com/containers/ansible-podman-collections/issues/355
     force_restart: "{{ (trollstalker_config_results.changed or trollstalker_image.changed) | bool }}"
     mount:
-      - "type=bind,source={{ install_dir }}/config_fci_nc/,target=/config/"
+      - "type=bind,source={{ install_dir }}/config_fci_nc,target=/config"
       - "type=bind,source={{ input_dir }},target=/mnt/input/"
     rm: true
     network: pytroll_network
+    log_opt:
+      max_size: 10mb
+
+## Segment Gatherer
+
+- name: copy the segment-gatherer configuration
+  copy:
+    src: segment_gatherer.yaml
+    dest: "{{ install_dir }}/config_fci_nc"
+  register: segment_gatherer_config_results
 
 - name: Pull the segment-gatherer image
   containers.podman.podman_image:
@@ -109,6 +121,25 @@
       - "type=bind,source={{ install_dir }}/config_fci_nc/,target=/config/"
     rm: true
     network: pytroll_network
+    log_opt:
+      max_size: 10mb
+
+## Trollflow2
+
+- name: Update the trollflow2 configuration
+  git:
+    repo: https://github.com/nordsat/ewc-config.git
+    dest: "{{ install_dir }}"
+  register: git_config_results
+  failed_when:
+    - git_config_results.failed
+    - not 'Local modifications exist in repository' in git_config_results.msg
+
+- name: Create local pyspectral directory
+  file:
+    path: "{{ install_dir }}/local/"
+    state: directory
+    mode: '0777'
 
 - name: Pull the trollflow2 image
   containers.podman.podman_image:
@@ -130,3 +161,8 @@
       - "type=bind,source={{ install_dir }}/local/,target=/.local/"
     rm: true
     network: pytroll_network
+    log_opt:
+      max_size: 10mb
+    env:
+      GDAL_NUM_THREADS: "ALL_CPUS"
+      NUM_THREADS: "ALL_CPUS"

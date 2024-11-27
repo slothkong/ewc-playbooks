@@ -15,6 +15,16 @@
     name: aardvark-dns
     state: latest
 
+- name: Install the latest version of uidmap
+  package:
+    name: uidmap
+    state: latest
+
+- name: Install the latest version of slirp4netns
+  package:
+    name: slirp4netns
+    state: latest
+
 - name: Create a podman network
   containers.podman.podman_network:
     name: pytroll_network
@@ -25,7 +35,7 @@
     state: directory
     mode: '0777'
 
-## Install and run postgis
+# Install and run postgis
 
 - name: Create pg-data directory
   file:
@@ -64,6 +74,18 @@
   register: postgis_pod
 
 ## Install and run db-sync
+
+- name: Create mapfile directory
+  file:
+    path: "{{ map_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Touch mapfile
+  file:
+    path: "{{ map_dir }}/mapfile_layers.map"
+    state: touch
+    mode: u=rw,g=r,o=r
 
 - name: Update the trollflow2 configuration
   git:
@@ -107,7 +129,7 @@
   register: dbsync_pod
 
 
-## Install and run mapserver
+# ## Install and run mapserver
 
 - name: copy the mapfile demo file
   copy:
@@ -136,6 +158,8 @@
       - "type=bind,source={{ input_dir }},target=/mnt/output"
     secrets:
       - pgpassword,type=env,target=POSTGRES_PASSWORD
+    env:
+      MS_MAPFILE: /etc/mapserver/mapserver.map
 
     rm: true
     publish: 8999:80
