@@ -109,7 +109,7 @@
     # Does not have any effect because of https://github.com/containers/ansible-podman-collections/issues/355
     force_restart: "{{ (trollstalker_config_results.changed or trollstalker_image.changed) | bool }}"
     mount:
-      - "type=bind,source={{ install_dir }}/config_fci_nc,target=/config"
+      - "type=bind,source={{ install_dir }}/config_fci_nc,target=/config/"
       - "type=bind,source={{ input_dir }},target=/mnt/input/"
     rm: true
     network: pytroll_network
@@ -154,7 +154,7 @@
     # Does not have any effect because of https://github.com/containers/ansible-podman-collections/issues/355
     force_restart: "{{ segment_gatherer_config_results.changed or segment_gatherer_image.changed }}"
     mount:
-      - "type=bind,source={{ install_dir }}/config_fci_nc/,target=/config"
+      - "type=bind,source={{ install_dir }}/config_fci_nc/,target=/config/"
     rm: true
     network: pytroll_network
     log_opt:
@@ -169,7 +169,7 @@
     # Does not have any effect because of https://github.com/containers/ansible-podman-collections/issues/355
     force_restart: "{{ segment_gatherer_config_results.changed or segment_gatherer_image.changed }}"
     volumes:
-      - "{{ install_dir }}/config_fci_nc/:/config"
+      - "{{ install_dir }}/config_fci_nc/:/config/"
     rm: true
     network: pytroll_network
     log_opt:
