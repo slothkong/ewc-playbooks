@@ -22,7 +22,7 @@
   package:
     name: aardvark-dns
     state: latest
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version >= '24.04'
 
 - name: Install the latest version of uidmap
   package:
@@ -101,7 +101,7 @@
   ansible.builtin.debug:
     msg: "{{ (trollstalker_config_results.changed or trollstalker_image.changed) | bool }}"
 
-- name: Restart the trollstalker (Ubuntu 24.04)
+- name: Restart the trollstalker (Ubuntu >= 24.04)
   containers.podman.podman_container:
     name: trollstalker-fci
     image: docker.io/mraspaud/trollstalker:main
@@ -115,7 +115,7 @@
     network: pytroll_network
     log_opt:
       max_size: 10mb
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version >= '24.04'
 
 - name: Restart the trollstalker (Ubuntu 22.04)
   containers.podman.podman_container:
@@ -159,9 +159,9 @@
     network: pytroll_network
     log_opt:
       max_size: 10mb
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version >= '24.04'
 
-- name: Restart the segment-gatherer (Ubuntu 22.04)
+- name: Restart the segment-gatherer (Ubuntu >= 24.04)
   containers.podman.podman_container:
     name: segment-gatherer-fci
     image: docker.io/mraspaud/segment-gatherer:main
@@ -190,7 +190,7 @@
     force: true
   register: trollflow2_image
 
-- name: Restart trollflow2 (Ubuntu 24.04)
+- name: Restart trollflow2 (Ubuntu >= 24.04)
   containers.podman.podman_container:
     name: trollflow2-fci
     image: docker.io/mraspaud/trollflow2:main
@@ -209,7 +209,7 @@
     env:
       GDAL_NUM_THREADS: "ALL_CPUS"
       NUM_THREADS: "ALL_CPUS"
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version >= '24.04'
 
 - name: Restart trollflow2 (Ubuntu 22.04)
   containers.podman.podman_container:
