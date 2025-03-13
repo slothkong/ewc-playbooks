@@ -24,7 +24,7 @@ MAP
   END # Web
 
   PROJECTION
-    "init=epsg:3857"
+    "init=epsg:3575"
   END
 
   OUTPUTFORMAT
