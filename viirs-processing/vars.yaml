@@ -1,0 +1,3 @@
+install_dir: "{{ ansible_env.HOME }}/viirs-processing"
+input_dir: /eodata/viirs/
+output_dir: /eodata/viirs_out/

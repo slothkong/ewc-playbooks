@@ -1,0 +1,10 @@
+---
+- hosts: all
+  name: viirs-processing
+
+  vars_files:
+    - vars.yaml
+
+  tasks:
+    - name: processing VIIRS
+      include_tasks: viirs-processing-tasks.yaml
