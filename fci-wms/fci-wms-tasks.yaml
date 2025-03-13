@@ -129,10 +129,10 @@
   register: dbsync_pod
 
 
-# ## Install and run mapserver
+## Install and run mapserver
 
-- name: copy the mapfile demo file
-  copy:
+- name: install the map base file
+  template:
     src: mapserver-demo.map
     dest: "{{ install_dir }}"
   register: mapfile_template
