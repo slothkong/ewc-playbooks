@@ -1,0 +1,10 @@
+---
+- hosts: all
+  name: viirs-wms
+
+  vars_files:
+    - vars.yaml
+
+  tasks:
+    - name: Serving rasters with WMS
+      include_tasks: viirs-wms-tasks.yaml

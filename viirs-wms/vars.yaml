@@ -1,0 +1,4 @@
+install_dir: "{{ ansible_env.HOME }}/wms"
+input_dir: /eodata/viirs_out/
+map_dir: /eodata/viirs_maps/
+pg_table_name: products_viirs
