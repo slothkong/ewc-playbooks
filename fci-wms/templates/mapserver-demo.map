@@ -16,7 +16,7 @@ MAP
     METADATA
       "wms_title"          "Nordsat WMS"  ##required
       "wms_onlineresource" "{{ wms_resource }}"   ##required
-      "wms_srs"            "EPSG:4326 EPSG:4269 EPSG:3857 EPSG:3301 EPSG:3035 EPSG:3575"  ##recommended
+      "wms_srs"            "EPSG:4326 EPSG:4269 EPSG:3857 EPSG:3301 EPSG:3035 EPSG:3575 EPSG:5939"  ##recommended
       "wms_enable_request" "*"   ##necessary
       "wms_include_items" "all"
       "wms_feature_info_mime_type" "text/html"
