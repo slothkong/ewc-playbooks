@@ -105,6 +105,7 @@
 - name: Pull the db-sync image
   containers.podman.podman_image:
     name: docker.io/mraspaud/db-sync:main
+    force: true
   register: dbsync_image
 
 - name: Should the container be restarted?
