@@ -28,6 +28,7 @@
   package:
     name: uidmap
     state: latest
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version >= '22.04'
 
 - name: Install the latest version of slirp4netns
   package:
