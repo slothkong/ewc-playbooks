@@ -115,7 +115,7 @@
     network: pytroll_network
     log_opt:
       max_size: 10mb
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version >= '24.04'
+  when: not (ansible_distribution == "Ubuntu" and ansible_distribution_version == "22.04")
 
 - name: Restart the trollstalker (Ubuntu 22.04)
   containers.podman.podman_container:
@@ -159,7 +159,7 @@
     network: pytroll_network
     log_opt:
       max_size: 10mb
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version >= '24.04'
+  when: not (ansible_distribution == "Ubuntu" and ansible_distribution_version == "22.04")
 
 - name: Restart the segment-gatherer (Ubuntu >= 24.04)
   containers.podman.podman_container:
@@ -209,7 +209,7 @@
     env:
       GDAL_NUM_THREADS: "ALL_CPUS"
       NUM_THREADS: "ALL_CPUS"
-  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version >= '24.04'
+  when: not (ansible_distribution == "Ubuntu" and ansible_distribution_version == "22.04")
 
 - name: Restart trollflow2 (Ubuntu 22.04)
   containers.podman.podman_container:
