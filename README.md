@@ -91,3 +91,14 @@ You can override these defaults when running the playbook by using the `--extra-
 ```bash
 ansible-playbook -i inventory path/to/playbook/filename.yaml -e "satellite_data_type=seviri"
 ```
+
+## Tested Platforms
+
+This playbook and container setup have been tested on the following platforms:
+
+| Operating System | Version       |
+|-----------------|---------------|
+| Ubuntu          | 22.04 LTS     |
+| Ubuntu          | 24.04 LTS     |
+| Rocky Linux     | 9             |
+
